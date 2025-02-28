@@ -21,8 +21,8 @@ def convert_markdown(file_path):
 
     content = re.sub(r'!\[\]\[(.*?)\]', replace_image, content)
 
-    # 참조 링크 제거 (빈 줄 포함)
-    content = re.sub(r'^\[[^\]]+\]:\s.*(\n)?', '', content, flags=re.MULTILINE)
+    # 참조 링크 제거 (빈 줄 포함), 주석은 제외
+    content = re.sub(r'^\[(?!\^)[^\]]+\]:\s.*(\n)?', '', content, flags=re.MULTILINE)
 
     with open(file_path, 'w', encoding='utf-8') as f:
         f.write(content)
