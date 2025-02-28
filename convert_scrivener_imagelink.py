@@ -17,7 +17,7 @@ def convert_markdown(file_path):
     def replace_image(match):
         key = match.group(1)
         file_name = ref_dict.get(key, key + '.png')  # 기본값: 키값에 .png 추가
-        return f'![]({file_name})'
+        return f'![](/images/{file_name})'
 
     content = re.sub(r'!\[\]\[(.*?)\]', replace_image, content)
 
