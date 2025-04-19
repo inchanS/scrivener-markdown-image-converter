@@ -44,28 +44,37 @@ Scrivener에서 이미지가 첨부된 글을 마크다운 파일로 컴파일�
 그 md파일을 위 스크립트가 같은 경로(폴더)에 두고,  
 터미널에서 다음과 같이 입력한 후 `enter`를 누른다.  
 
-`python convert_scrivener_imagelink.py compiled_file.md`  
+#### 기본 사용 (example.md -> example_converted.md 파일 생성 및 변환)
+`python convert_scrivener_imagelink.py example.md`
+
+#### 이미지 경로 지정
+`python convert_scrivener_imagelink.py example.md -i /images/`
+
+#### 변환된 파일의 접미사 지정
+`python convert_scrivener_imagelink.py example.md -s _new`
 
 &nbsp;
 
 - compiled_file.md 부분에 변환하고자 하는 md파일명을 넣으면 된다.
+- `-i` 또는 `--image-path` 옵션으로 이미지 경로를 지정할 수 있다. 기본값은 `/images/`
+- `-s` 또는 `--suffix` 옵션으로 변환된 파일의 접미사를 지정할 수 있다. 기본값은 `_converted`
+
 
 파인더에서 해당 경로의 터미널을 바로 여는 방법은 상위 폴더를 우클릭 한 후,`서비스 - 폴더에서 새로운 터미널 열기`를 누르면 된다.    
 
 &nbsp;
 
-#### 이미지파일의 경로 수정
-convert_scrivener_imagelink.py의 20번째 줄을 수정하여 `경로`를 다음과 같이 조정할 수 있다.  
+#### 이미지 경로 설정 예시
 
-`return f'![](/images/{file_name})'`  
+이미지 경로는 마크다운에서 이미지를 참조할 때 사용되는 경로이며, 다음과 같은 형식으로 지정할 수 있다:
 
-&nbsp;
+- 절대 경로: `-i /images/` → `![](/images/파일명.png)`
+- 상대 경로: `-i ./images/` → `![](./images/파일명.png)`
+- 경로 없음: `-i ""` → `![](파일명.png)`
 
-위 코드에서 `/images/`부분을 본인이 사용하는 이미지 폴더경로(상대경로)로 바꾸어주면 된다.  
-만약 마크다운 파일과 같은 폴더에 이미지를 저장하고 사용한다면 `return f'![]({file_name})'` 이렇게 경로를 완전히 빼면 된다.
+사용할 마크다운 환경(Obsidian, Jekyll, Hugo 등)에 맞게 이미지 경로를 지정하면 된다.
 
 &nbsp;
 
 ### 주의
-- 이미지 링크를 변환하고자 하는 md파일의 복사본으로 변환할 것!
-- 또는 반드시 원본 파일은 백업 후 변환할 것!
+- 원본 파일 외에 변환된 새로운 파일이 생성된다.
