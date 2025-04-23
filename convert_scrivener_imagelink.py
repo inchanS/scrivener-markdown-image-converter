@@ -115,16 +115,13 @@ def replace_consecutive_blank_lines(content: str) -> str:
     
     # 공백 2개 줄 연속 카운트
     count = 0
-    for i, line in enumerate(lines):
+    for line in lines:
         core = line.rstrip('\n')
         
         if core == "  ":  # 공백 2개를 가진 빈 줄
             count += 1
             if count % 2 == 0:  # 두 번째, 네 번째, ... 줄
-                # 줄바꿈 문자 보존
-                newline = line[len(core):]
-                # 문자열 "&nbsp;  "를 직접 추가
-                result.append("&nbsp;  " + newline)
+                result.append(line.replace("  ", "&nbsp;  "))
             else:
                 result.append(line)  # 첫 번째, 세 번째, ... 줄은 그대로 유지
         else:
