@@ -85,8 +85,7 @@ def clean_blank_lines(content: str) -> str:
             if core == "  ":
                 # Scrivener 실제 빈줄
                 output.append(line)
-            elif core == "":
-                # 완전 빈줄
+            elif core == "" or '\t' in core:  # 완전 빈줄 또는 탭 1개 이상이 있는 빈줄
                 prev_core = lines[i-1].rstrip('\n') if i > 0 else None
                 next_core = lines[i+1].rstrip('\n') if i < n-1 else None
                 prev_txt = prev_core is not None and prev_core.strip() != ""
@@ -96,7 +95,7 @@ def clean_blank_lines(content: str) -> str:
                     continue
                 output.append(line)
             else:
-                # 탭 1개, 공백 3칸 등 기타 공백 줄
+                # 공백 3칸 등 기타 공백 줄(탭이 없는)
                 output.append(line)
         else:
             # 내용 있는 줄
