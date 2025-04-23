@@ -102,6 +102,34 @@ def clean_blank_lines(content: str) -> str:
             output.append(line)
     return ''.join(output)
 
+def replace_consecutive_blank_lines(content: str) -> str:
+    """
+    공백 2개를 가진 빈 줄이 연속될 경우 두 번째 줄마다 공백을 변환합니다.
+    - 2줄 연속: 두번째 줄의 공백 2개를 &nbsp;  로 교체
+    - 3줄 연속: 두번째 줄만 교체, 세번째 줄은 유지
+    - 4줄 연속: 두번째, 네번째 줄 교체
+    - 패턴 반복
+    """
+    lines = content.splitlines(keepends=True)
+    result = []
+    
+    # 공백 2개 줄 연속 카운트
+    count = 0
+    for line in lines:
+        core = line.rstrip('\n')
+        
+        if core == "  ":  # 공백 2개를 가진 빈 줄
+            count += 1
+            if count % 2 == 0:  # 두 번째, 네 번째, ... 줄
+                result.append(line.replace("  ", "&nbsp;  "))
+            else:
+                result.append(line)  # 첫 번째, 세 번째, ... 줄은 그대로 유지
+        else:
+            count = 0  # 다른 줄이 나오면 카운트 초기화
+            result.append(line)
+    
+    return ''.join(result)
+
 def convert_markdown(file_path: str, image_path: str = "/images/", suffix: str = "_converted") -> None:
     """마크다운 파일을 복사본을 생성하고 이미지 링크 변환 및 빈줄 정리 수행"""
     new_path = create_copy(file_path, suffix)
@@ -113,6 +141,8 @@ def convert_markdown(file_path: str, image_path: str = "/images/", suffix: str =
     content = remove_references(content)
     # 4) 불필요 빈줄 정리
     content = clean_blank_lines(content)
+    # 5) 연속된 공백 2개 줄 처리
+    content = replace_consecutive_blank_lines(content)
 
     write_markdown_file(new_path, content)
     print(f"파일 변환이 완료되었습니다: {new_path}\n원본 파일은 변경되지 않았습니다: {file_path}")
