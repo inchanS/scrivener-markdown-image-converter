@@ -1,3 +1,13 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Scrivener 마크다운 파일 처리 도구
+- 이미지 링크 변환
+- 불필요한 단독 빈줄 정리
+
+사용법:
+    python3 convert_scrivener_imagelink.py input.md [-i IMAGE_PATH] [-s SUFFIX]
+"""
 import re
 import sys
 import os
@@ -59,20 +69,54 @@ def remove_references(content: str) -> str:
     """참조 링크를 제거합니다 (각주 제외)."""
     return re.sub(r'^\[(?!\^)[^\]]+\]:\s.*(\n)?', '', content, flags=re.MULTILINE)
 
+def clean_blank_lines(content: str) -> str:
+    """
+    - 공백 2칸만 있는 줄: 유지
+    - 완전 빈줄인 줄이, 앞뒤 모두 텍스트 줄인 단독 빈줄: 제거
+    - 그 외 줄: 그대로 유지
+    """
+    lines = content.splitlines(keepends=True)
+    output = []
+    n = len(lines)
+    for i, line in enumerate(lines):
+        core = line.rstrip('\n')
+        # 공백만 있는 줄 처리
+        if core.strip() == "":
+            if core == "  ":
+                # Scrivener 실제 빈줄
+                output.append(line)
+            elif core == "":
+                # 완전 빈줄
+                prev_core = lines[i-1].rstrip('\n') if i > 0 else None
+                next_core = lines[i+1].rstrip('\n') if i < n-1 else None
+                prev_txt = prev_core is not None and prev_core.strip() != ""
+                next_txt = next_core is not None and next_core.strip() != ""
+                # 앞뒤 모두 텍스트면 제거
+                if prev_txt and next_txt:
+                    continue
+                output.append(line)
+            else:
+                # 탭 1개, 공백 3칸 등 기타 공백 줄
+                output.append(line)
+        else:
+            # 내용 있는 줄
+            output.append(line)
+    return ''.join(output)
+
 def convert_markdown(file_path: str, image_path: str = "/images/", suffix: str = "_converted") -> None:
-    """마크다운 파일의 복사본을 생성하고 이미지 링크를 변환합니다."""
-    # 복사본 생성
-    new_file_path = create_copy(file_path, suffix)
-    
-    # 복사본을 변환
-    content = read_markdown_file(new_file_path)
-    ref_dict = extract_references(content)
-    content = replace_image_links(content, ref_dict, image_path)
+    """마크다운 파일을 복사본을 생성하고 이미지 링크 변환 및 빈줄 정리 수행"""
+    new_path = create_copy(file_path, suffix)
+    content = read_markdown_file(new_path)
+
+    # 1) 참조 정의 추출 → 2) 이미지 링크 변환 → 3) 참조 제거
+    refs = extract_references(content)
+    content = replace_image_links(content, refs, image_path)
     content = remove_references(content)
-    write_markdown_file(new_file_path, content)
-    
-    print(f"파일 변환이 완료되었습니다: {new_file_path}")
-    print(f"원본 파일은 변경되지 않았습니다: {file_path}")
+    # 4) 불필요 빈줄 정리
+    content = clean_blank_lines(content)
+
+    write_markdown_file(new_path, content)
+    print(f"파일 변환이 완료되었습니다: {new_path}\n원본 파일은 변경되지 않았습니다: {file_path}")
 
 def parse_arguments():
     """명령줄 인수를 파싱합니다."""
