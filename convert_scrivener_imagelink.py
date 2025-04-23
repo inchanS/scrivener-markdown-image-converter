@@ -104,30 +104,54 @@ def clean_blank_lines(content: str) -> str:
 
 def replace_consecutive_blank_lines(content: str) -> str:
     """
-    공백 2개를 가진 빈 줄이 연속될 경우 두 번째 줄마다 공백을 변환합니다.
-    - 2줄 연속: 두번째 줄의 공백 2개를 &nbsp;  로 교체
-    - 3줄 연속: 두번째 줄만 교체, 세번째 줄은 유지
-    - 4줄 연속: 두번째, 네번째 줄 교체
-    - 패턴 반복
+    공백 2칸 다음 빈줄이 2번 이상 반복될 때마다
+    공백 다음줄의 빈줄을 &nbsp;로 바꿉니다.
+
+    예시:
+    ```
+      <- 공백 2칸
+
+      <- 공백 2칸 (빈줄이 2번 이상 반복되지 않으므로 유지)
+
+      <- 공백 2칸
+    &nbsp; <- 빈줄을 &nbsp;로 교체 (2번 반복)
+
+
+      <- 공백 2칸
+    &nbsp; <- 빈줄을 &nbsp;로 교체 (2번 반복)
+    ```
     """
     lines = content.splitlines(keepends=True)
     result = []
-    
-    # 공백 2개 줄 연속 카운트
-    count = 0
-    for line in lines:
-        core = line.rstrip('\n')
-        
-        if core == "  ":  # 공백 2개를 가진 빈 줄
-            count += 1
-            if count % 2 == 0:  # 두 번째, 네 번째, ... 줄
-                result.append(line.replace("  ", "&nbsp;  "))
+
+    consecutive_count = 0  # 연속된 "공백 2칸 + 빈줄" 패턴 카운트
+    i = 0
+
+    while i < len(lines):
+        # 현재 줄이 공백 2칸이고 다음 줄이 완전히 빈 줄인지 확인
+        if i + 1 < len(lines) and lines[i].rstrip('\n') == "  " and lines[i+1].strip() == "":
+            consecutive_count += 1
+
+            # 첫 번째 줄(공백 2칸)은 항상 그대로 추가
+            result.append(lines[i])
+
+            # 두 번째 줄(빈 줄)은 연속 카운트에 따라 처리
+            if consecutive_count >= 2:  # 2번 이상 반복되면
+                # 빈 줄을 &nbsp;로 교체하고 줄바꿈 문자 보존
+                newline = lines[i+1][len(lines[i+1].rstrip('\n')):]
+                result.append("&nbsp;  " + newline)
             else:
-                result.append(line)  # 첫 번째, 세 번째, ... 줄은 그대로 유지
+                # 그대로 유지
+                result.append(lines[i+1])
+
+            # 패턴의 두 줄을 처리했으므로 인덱스 2 증가
+            i += 2
         else:
-            count = 0  # 다른 줄이 나오면 카운트 초기화
-            result.append(line)
-    
+            # 패턴이 아닌 경우, 패턴 카운트 초기화 및 그대로 추가
+            consecutive_count = 0
+            result.append(lines[i])
+            i += 1
+
     return ''.join(result)
 
 def convert_markdown(file_path: str, image_path: str = "/images/", suffix: str = "_converted") -> None:
