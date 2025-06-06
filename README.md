@@ -1,4 +1,7 @@
 ## Scrivener에서 컴파일한 마크다운 파일의 이미지 링크 변환 스크립트
+![GitHub stars](https://img.shields.io/github/stars/inchans/scrivener-markdown-image-converter?style=flat&logo=apachespark)
+![GitHub all releases](https://img.shields.io/github/downloads/inchanS/scrivener-markdown-image-converter/total?logo=github) ![GitHub release (latest by date)](https://img.shields.io/github/v/release/inchanS/scrivener-markdown-image-converter?logo=rocket)  ![GitHub](https://img.shields.io/github/license/inchanS/scrivener-markdown-image-converter)
+
 
 Scrivener에서 작성한 글을 MultiMarkDown파일로 compile 했을 때, **이미지 링크를 표준 문법으로 변환**하는 스크립트.
 
