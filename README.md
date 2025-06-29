@@ -53,14 +53,14 @@ Scrivener에서 이미지가 첨부된 글을 마크다운 파일로 컴파일�
 #### 이미지 경로 지정
 `python convert_scrivener_imagelink.py example.md -i /images/`
 
-#### 변환된 파일의 접미사 지정
-`python convert_scrivener_imagelink.py example.md -s _new`
+#### 변환된 파일명 지정
+`python convert_scrivener_imagelink.py example.md -o new_index.md`
 
 &nbsp;
 
 - `example.md` 부분에 변환하고자 하는 md파일명을 넣으면 된다.
 - `-i` 또는 `--image-path` 옵션으로 이미지 경로를 지정할 수 있다. 기본값은 `/images/`
-- `-s` 또는 `--suffix` 옵션으로 변환된 파일의 접미사를 지정할 수 있다. 기본값은 `_converted`
+- `-o` 또는 `--output` 옵션으로 변환된 파일의 파일명을 지정할 수 있다. 기본값은 `index.md`
 
 
 파인더에서 해당 경로의 터미널을 바로 여는 방법은 상위 폴더를 우클릭 한 후,`서비스 - 폴더에서 새로운 터미널 열기`를 누르면 된다.    
