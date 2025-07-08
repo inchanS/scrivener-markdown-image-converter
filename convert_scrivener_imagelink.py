@@ -99,7 +99,7 @@ def clean_blank_lines(content: str) -> str:
     return ''.join(output)
 
 def replace_consecutive_blank_lines(content: str) -> str:
-    """연속된 특정 빈줄 패턴을 &nbsp;로 바꿉니다."""
+    """연속된 특정 빈줄 패턴을 <br>로 바꿉니다."""
     lines = content.splitlines(keepends=True)
     result = []
     consecutive_count = 0
@@ -110,7 +110,7 @@ def replace_consecutive_blank_lines(content: str) -> str:
             result.append(lines[i])
             if consecutive_count >= 2:
                 newline = lines[i+1][len(lines[i+1].rstrip('\n')):]
-                result.append("&nbsp;  " + newline)
+                result.append("<br>  " + newline)
             else:
                 result.append(lines[i+1])
             i += 2
