@@ -110,6 +110,7 @@ def replace_consecutive_blank_lines(content: str) -> str:
             result.append(lines[i])
             if consecutive_count >= 2:
                 newline = lines[i+1][len(lines[i+1].rstrip('\n')):]
+                result.append(newline)
                 result.append("<br>  " + newline)
                 result.append(newline)
             else:
