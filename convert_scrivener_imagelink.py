@@ -3,7 +3,7 @@
 """
 Scrivener 마크다운 파일 처리 도구
 - 이미지 링크를 상대 경로로 변환
-- 불필요한 단독 빈줄 정리
+- 불필요한 단독 빈줄 정리 ( <br> 주변 제외 )
 - 출력 파일명 지정 (기본: index.md)
 
 사용법:
@@ -75,20 +75,28 @@ def remove_references(content: str) -> str:
     return re.sub(r'^\[(?!\^)[^\]]+\]:\s.*(\n)?', '', content, flags=re.MULTILINE)
 
 def clean_blank_lines(content: str) -> str:
-    """불필요한 단독 빈줄을 정리합니다."""
+    """불필요한 단독 빈줄을 정리하되, <br> 태그 주변은 유지합니다."""
     lines = content.splitlines(keepends=True)
     output = []
     n = len(lines)
     for i, line in enumerate(lines):
         core = line.rstrip('\n')
         if core.strip() == "":
+            prev_line = lines[i-1] if i > 0 else ""
+            next_line = lines[i+1] if i < n-1 else ""
+
+            # <br> 태그 인접 여부 확인
+            if "<br>" in prev_line or "<br>" in next_line:
+                output.append(line)
+                continue
+
             if core == "  ":
                 output.append(line)
             elif core == "" or '\t' in core:
-                prev_core = lines[i-1].rstrip('\n') if i > 0 else None
-                next_core = lines[i+1].rstrip('\n') if i < n-1 else None
-                prev_txt = prev_core is not None and prev_core.strip() != ""
-                next_txt = next_core is not None and next_core.strip() != ""
+                prev_core = prev_line.rstrip('\n')
+                next_core = next_line.rstrip('\n')
+                prev_txt = prev_core.strip() != ""
+                next_txt = next_core.strip() != ""
                 if prev_txt and next_txt:
                     continue
                 output.append(line)
@@ -130,8 +138,10 @@ def convert_markdown(file_path: str, output_filename: str, image_path: str = DEF
     refs = extract_references(content)
     content = replace_image_links(content, refs, image_path)
     content = remove_references(content)
-    content = clean_blank_lines(content)
+
+    # 순서: 연속 빈줄을 <br>로 먼저 바꾼 뒤, 일반 빈줄 정리 실행 (보존 로직 작동을 위함)
     content = replace_consecutive_blank_lines(content)
+    content = clean_blank_lines(content)
 
     write_markdown_file(output_filename, content)
     print(f"파일 변환이 완료되었습니다: {output_filename}\n원본 파일은 변경되지 않았습니다: {file_path}")
