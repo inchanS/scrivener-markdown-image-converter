@@ -3,7 +3,7 @@
 ![GitHub all releases](https://img.shields.io/github/downloads/inchanS/scrivener-markdown-image-converter/total?logo=github) ![GitHub release (latest by date)](https://img.shields.io/github/v/release/inchanS/scrivener-markdown-image-converter?logo=rocket)  ![GitHub](https://img.shields.io/github/license/inchanS/scrivener-markdown-image-converter)
 
 
-Scrivener에서 작성한 글을 MultiMarkDown파일로 compile 했을 때, **이미지 링크를 표준 문법으로 변환**하는 스크립트.
+Scrivener에서 작성한 글을 MultiMarkdown 파일로 컴파일했을 때, **이미지 링크를 인라인 문법으로 변환하고 개행 처리를 선택적으로 수행**하는 스크립트.
 
 
 ### 배경
@@ -56,12 +56,26 @@ Scrivener에서 이미지가 첨부된 글을 마크다운 파일로 컴파일�
 #### 변환된 파일명 지정
 `python convert_scrivener_imagelink.py example.md -o new_index.md`
 
+#### 이미지 링크 변환과 개행 처리 함께 실행
+`python3 convert_scrivener_imagelink.py example.md -c`
+
+#### 이미지 링크는 유지하고 개행 처리만 실행
+`python3 convert_scrivener_imagelink.py example.md --only-clean-lines`
+
+| 실행 옵션 | 이미지 링크 변환 | 개행 처리 |
+| --- | --- | --- |
+| 옵션 없음 | 실행 | 실행하지 않음 |
+| `-c` / `--clean-lines` | 실행 | 실행 |
+| `--only-clean-lines` | 실행하지 않음 | 실행 |
+
 &nbsp;
 
 - `example.md` 부분에 변환하고자 하는 md파일명을 넣으면 된다.
 - `-i` 또는 `--image-path` 옵션으로 이미지 경로를 지정할 수 있다. 기본값은 `/images/`
 - `-o` 또는 `--output` 옵션으로 변환된 파일의 파일명을 지정할 수 있다. 기본값은 입력 파일명에 `_converted` 접미사를 붙인 이름 (예: `example.md` -> `example_converted.md`)
 - `-c` 또는 `--clean-lines` 옵션으로 빈줄 정리 및 연속 빈줄의 `<br>` 변환을 활성화할 수 있다. (아래 v0.4 개행처리 규칙을 적용한 파일 전용)
+- `--only-clean-lines` 옵션은 이미지 링크와 참조 정의를 유지하고 개행 처리만 수행한다. 이 모드에서는 `-i` 옵션을 무시한다.
+- `-c`와 `--only-clean-lines`는 동시에 사용할 수 없다. 세 모드 모두 동일한 출력 파일명 규칙과 `-o` 옵션을 사용한다.
 
 
 파인더에서 해당 경로의 터미널을 바로 여는 방법은 상위 폴더를 우클릭 한 후,`서비스 - 폴더에서 새로운 터미널 열기`를 누르면 된다.    
@@ -90,9 +104,10 @@ Scrivener에서 이미지가 첨부된 글을 마크다운 파일로 컴파일�
   - `With(포함)`란에 입력할 수 있도록 준비한 후, 아까와 마찬가지로 `Space key`를 두번 누른 후, `Option + Enter`키를 함께 누른다. (마크다운 문법에서의 줄바꿈인 공백 2칸과 줄바꿈 처리를 하는 것이다.)
   - 완성된 규칙을 체크하여 적용될 수 있도록 하고 포맷을 저장한다.
 2. 마크다운 파일로 컴파일할 때, `Convert rich text to MultiMarkdown` 옵션에 체크하고 컴파일 한다.
-3. `-c`(`--clean-lines`) 옵션을 붙여 스크립트를 실행한다.
+3. 이미지 링크도 변환하려면 `-c`(`--clean-lines`), 개행 처리만 하려면 `--only-clean-lines` 옵션으로 실행한다.
    - `python convert_scrivener_imagelink.py example.md -c`
-   - 이 옵션은 위 개행처리 규칙을 적용해 컴파일한 파일을 전제로 하므로, 규칙 없이 컴파일한 일반 마크다운 파일에 사용하면 문단 사이의 빈줄이 제거될 수 있다.
+   - `python3 convert_scrivener_imagelink.py example.md --only-clean-lines`
+   - 두 옵션 모두 위 개행처리 규칙을 적용해 컴파일한 파일을 전제로 하므로, 규칙 없이 컴파일한 일반 마크다운 파일에 사용하면 문단 사이의 빈줄이 제거될 수 있다.
 
 마크다운 문법에서는 비어있는 여러 줄을 강제 개행하기가 불편하다.  
 개행하기 위해서는 공백을 두칸 주고 줄바꿈을 하여야 하는데, 이 조차 두번 연속됐을 때에는 렌더러가 빈줄을 하나로만 인식하고 있다.  
@@ -103,3 +118,15 @@ Scrivener에서 이미지가 첨부된 글을 마크다운 파일로 컴파일�
 ### 주의
 - 원본 파일 외에 변환된 새로운 파일이 생성된다.
 - 출력 파일과 같은 이름의 파일이 이미 존재하면 덮어쓸지 물어본다.
+
+### 테스트
+
+추가 패키지 없이 프로젝트 폴더에서 전체 테스트를 실행할 수 있다.
+
+```sh
+python3 -m unittest discover -v
+```
+
+- `test_convert_scrivener_imagelink.py`: 이미지 참조 추출·링크 변환·참조 정의 제거 검증
+- `test_convert_scrivener_linebreaks.py`: 빈줄 정리와 연속 빈줄의 `<br>` 변환 규칙 검증
+- `test_convert_scrivener_cli.py`: 세 실행 모드, 옵션, 원본 보존, 덮어쓰기 확인 및 함수 호출 호환성 검증

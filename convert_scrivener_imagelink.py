@@ -2,12 +2,13 @@
 # -*- coding: utf-8 -*-
 """
 Scrivener 마크다운 파일 처리 도구
-- 이미지 링크를 상대 경로로 변환
+- 기본 실행: 이미지 링크를 지정한 경로의 인라인 링크로 변환
 - 빈줄 정리 옵션(-c): 불필요한 단독 빈줄 정리 및 연속 빈줄의 <br> 변환 ( <br> 주변 제외 )
+- 개행 처리 전용 옵션(--only-clean-lines): 이미지 링크와 참조 정의를 유지하고 빈줄만 정리
 - 출력 파일명 지정 (기본: 입력 파일명에 _converted 접미사를 붙인 이름)
 
 사용법:
-    python3 convert_scrivener_imagelink.py input.md [-o OUTPUT_FILE] [-i IMAGE_PATH] [-c]
+    python3 convert_scrivener_imagelink.py input.md [-o OUTPUT_FILE] [-i IMAGE_PATH] [-c | --only-clean-lines]
 """
 import re
 import sys
@@ -98,6 +99,7 @@ def clean_blank_lines(content: str) -> str:
                 continue
 
             if core == "  ":
+                # 공백 두 칸은 Scrivener의 강제 개행 표시이므로 그대로 보존합니다.
                 output.append(line)
             elif core == "" or '\t' in core:
                 prev_core = prev_line.rstrip('\n')
@@ -120,6 +122,7 @@ def replace_consecutive_blank_lines(content: str) -> str:
     consecutive_count = 0
     i = 0
     while i < len(lines):
+        # 공백 두 칸인 줄과 빈줄을 한 쌍으로 세어, 연속된 두 번째 쌍부터 <br>를 넣습니다.
         if i + 1 < len(lines) and lines[i].rstrip('\n') == "  " and lines[i+1].strip() == "":
             consecutive_count += 1
             result.append(lines[i])
@@ -137,17 +140,21 @@ def replace_consecutive_blank_lines(content: str) -> str:
             i += 1
     return ''.join(result)
 
-def convert_markdown(file_path: str, output_filename: str, image_path: str = DEFAULT_IMAGE_PATH, clean_lines: bool = False) -> None:
-    """지정된 이름으로 마크다운 파일을 생성하고 이미지 링크 변환(및 옵션 시 빈줄 정리)을 수행합니다."""
+def convert_markdown(file_path: str, output_filename: str, image_path: str = DEFAULT_IMAGE_PATH,
+                     clean_lines: bool = False, only_clean_lines: bool = False) -> None:
+    """기본은 이미지 변환, clean_lines는 개행 처리 추가, only_clean_lines는 개행만 수행합니다."""
     create_output_file(file_path, output_filename)
     content = read_markdown_file(output_filename)
 
-    refs = extract_references(content)
-    used_keys = find_image_reference_keys(content)
-    content = replace_image_links(content, refs, image_path)
-    content = remove_references(content, used_keys)
+    # 개행 전용 모드에서는 이미지 참조 정의를 제거하지 않습니다.
+    # 새 인수는 마지막에 추가하여 기존 위치 인수 호출도 그대로 지원합니다.
+    if not only_clean_lines:
+        refs = extract_references(content)
+        used_keys = find_image_reference_keys(content)
+        content = replace_image_links(content, refs, image_path)
+        content = remove_references(content, used_keys)
 
-    if clean_lines:
+    if clean_lines or only_clean_lines:
         # 순서: 연속 빈줄을 <br>로 먼저 바꾼 뒤, 일반 빈줄 정리 실행 (보존 로직 작동을 위함)
         content = replace_consecutive_blank_lines(content)
         content = clean_blank_lines(content)
@@ -167,11 +174,18 @@ def parse_arguments():
         default=DEFAULT_IMAGE_PATH,
         help=f'이미지 경로 (기본값: {DEFAULT_IMAGE_PATH}, 경로 없이 파일명만 쓰려면 -i "" 지정)'
     )
-    parser.add_argument(
+    # 두 실행 모드를 동시에 지정하면 의도가 모호하므로 명령줄에서 구분합니다.
+    line_mode = parser.add_mutually_exclusive_group()
+    line_mode.add_argument(
         '-c',
         '--clean-lines',
         action='store_true',
         help='빈줄 정리 및 연속 빈줄의 <br> 변환 활성화 (v0.4 개행처리 규칙을 적용해 컴파일한 파일 전용)'
+    )
+    line_mode.add_argument(
+        '--only-clean-lines',
+        action='store_true',
+        help='이미지 링크와 참조 정의를 유지하고 개행 처리만 수행 (-i는 무시, v0.4 개행처리 규칙을 적용해 컴파일한 파일 전용)'
     )
     return parser.parse_args()
 
@@ -205,4 +219,5 @@ if __name__ == "__main__":
             sys.exit(0)
 
     # 새로 조합된 전체 출력 경로를 함수에 전달합니다.
-    convert_markdown(args.file_path, output_path, args.image_path, args.clean_lines)
+    convert_markdown(args.file_path, output_path, args.image_path, args.clean_lines,
+                     only_clean_lines=args.only_clean_lines)
