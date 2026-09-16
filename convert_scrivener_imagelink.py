@@ -19,7 +19,7 @@ from typing import Dict, Set
 
 # --- 설정 변수 ---
 # 이미지 경로 기본값을 여기서 쉽게 수정할 수 있습니다.
-DEFAULT_IMAGE_PATH = "/images/"
+DEFAULT_IMAGE_PATH = ""
 
 def read_markdown_file(file_path: str) -> str:
     """마크다운 파일을 읽어 내용을 반환합니다."""
